@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "canisters": {
+    "storage_backend": {
+      "type": "rust",
+      "package": "storage_backend",
+      "candid": "src/storage_backend/storage_backend.did"
+    },
+    "storage_frontend": {
+      "type": "assets",
+      "source": [
+        "src/storage_frontend/assets"
+      ],
+      "dependencies": [
+        "storage_backend"
+      ]
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "",
+      "args": ""
+    }
+  },
+  "output_env_file": ".env"
+}
