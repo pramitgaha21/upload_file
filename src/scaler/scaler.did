@@ -1,0 +1,4 @@
+service : {
+  query_storage_canister : () -> (principal);
+  storage_list : () -> (vec principal) query;
+}

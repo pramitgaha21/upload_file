@@ -1,0 +1,14 @@
+{
+  "name": "scaler",
+  "scripts": {
+    "gen_can_test_interface": "bash ./scripts/gen_can_test_interface.sh",
+    "test": "bash ./scripts/test.sh"
+  },
+  "dependencies": {
+    "@dfinity/agent": "^0.19.3",
+    "@dfinity/identity": "^0.19.3",
+    "crc-32": "^1.2.2",
+    "mime": "^3.0.0",
+    "tape": "^5.7.0"
+  }
+}
