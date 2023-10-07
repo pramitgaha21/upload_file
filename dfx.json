@@ -7,9 +7,11 @@
       "candid": "src/scaler/scaler.did"
     },
     "storage": {
-      "type": "custom",
-      "wasm": "wasm_files/storage.wasm",
-      "candid": "src/storage/storage.did"
+      "package": "storage",
+      "type": "rust",
+      "wasm": "target/wasm32-unknown-unknown/release/storage.wasm",
+      "candid": "src/storage/storage.did",
+      "cycles": "optimize"
     }
   },
   "defaults": {

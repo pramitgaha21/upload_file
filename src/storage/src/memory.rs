@@ -21,6 +21,6 @@ pub fn get_chunk_stable_memory() -> StableBTreeMap<u128, Chunk, Memory>{
 
 pub fn get_asset_stable_memory() -> StableBTreeMap<u128, Asset, Memory>{
     StableBTreeMap::init(
-        MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2))),
+        MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(3))),
     )
 }

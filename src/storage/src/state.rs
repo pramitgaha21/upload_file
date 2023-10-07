@@ -35,13 +35,13 @@ impl Default for State {
 
 impl State {
     pub fn get_chunk_id(&mut self) -> u128 {
-        let id = self.chunk_count.clone();
+        let id = self.chunk_count;
         self.chunk_count += 1;
         id
     }
 
     pub fn get_asset_id(&mut self) -> u128 {
-        let id = self.asset_count.clone();
+        let id = self.asset_count;
         self.asset_count += 1;
         id
     }
@@ -52,21 +52,21 @@ thread_local! {
     pub static STATE: RefCell<State> = RefCell::default();
 }
 
-pub(crate) fn query_in_prod() -> bool {
-    STATE.with(|state| state.borrow().in_prod)
-}
-
 // if the returned value is of lenth 0, then every ids are valid else
 // returns a list of ids that aren't present. use the returned data for better error handling
-pub fn chunk_ids_validity_check(ids: &[u128]) -> Vec<u128> {
+pub fn chunk_ids_validity_check(ids: &[u128]) -> bool {
     STATE.with(|state| {
         let state = state.borrow();
-        let mut invalid_ids = vec![];
-        ids.iter().for_each(|id| {
-            if !state.chunk_list.contains_key(id) {
-                invalid_ids.push(id.clone());
+        // ids.iter().for_each(|id| {
+        //     if !state.chunk_list.contains_key(id) {
+        //         return false
+        //     }
+        // });
+        for id in ids.iter(){
+            if !state.chunk_list.contains_key(id){
+                return false
             }
-        });
-        invalid_ids
+        }
+        true
     })
 }

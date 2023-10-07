@@ -1,9 +1,9 @@
 use candid::{CandidType, Deserialize, Principal, Decode, Encode};
-use ic_cdk_macros::{query, update};
+use ic_cdk_macros::{update, query};
 use ic_stable_structures::{Storable, storable::Bound};
 use std::{collections::HashMap, time::Duration};
 use serde::Serialize;
-use crate::{state::STATE, utils::{update_storage, url_generator}, chunk_handler::delete_expired_chunks};
+use crate::{state::STATE, utils::{update_storage, url_generator}};
 
 #[derive(CandidType, Serialize, Deserialize, Clone)]
 pub struct Asset {
@@ -19,7 +19,7 @@ pub struct Asset {
 impl Storable for Asset{
     fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
         Decode!(&bytes, Self).unwrap()
-    }
+    } 
 
     fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
         std::borrow::Cow::Owned(Encode!(&self).unwrap())
@@ -43,7 +43,7 @@ impl From<&Asset> for AssetQuery {
         Self {
             asset_id: value.asset_id,
             file_name: value.file_name.clone(),
-            file_type: value.file_name.clone(),
+            file_type: value.file_type.clone(),
             url: value.url.clone(),
             owned_by: value.owned_by,
             uploaded_at: value.uploaded_at,
@@ -103,21 +103,20 @@ pub fn commit_batch(args: CommitBatchArgs) -> u128 {
         chunks_to_commit.sort_by_key(|chunks| chunks.1);
         chunks_to_commit.iter().for_each(|(id, _)| {
             let chunk = state.chunk_list.remove(id).unwrap();
-            checksum = (checksum + chunk.checksum) % 400_000_000;
+            // checksum = (checksum + chunk.checksum) % 360_000_000;
+            ic_cdk::println!("{}", checksum);
             chunk_size += 1;
             content.push(chunk.content);
         });
+        checksum = crc32fast::hash(&content.concat());
         if args.checksum != checksum {
             let error_msg = format!("Checksum mismatch: {} != {}", args.checksum, checksum);
             ic_cdk::trap(&error_msg)
         }
-        // if content.len() as u32 > <Asset as BoundedStorable>::MAX_SIZE {
-        //     ic_cdk::trap("Exceeds allow file limit size")
-        // }
         let id = state.get_asset_id();
-        let url = url_generator(&id);
+        let url = url_generator(&state.in_prod, &id);
         let asset = Asset { asset_id: id, file_name: args.file_name, file_type: args.file_type, chunks: content, url, owned_by: caller, uploaded_at: ic_cdk::api::time() };
-        state.asset_list.insert(id, asset).expect("failed to insert");
+        state.asset_list.insert(id, asset);
         id
     })
 }

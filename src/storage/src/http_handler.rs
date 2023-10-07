@@ -1,5 +1,5 @@
 use crate::{state::STATE, utils::asset_id_extractor};
-use candid::{Func, CandidType, Deserialize};
+use candid::{Func, CandidType, Deserialize, define_function};
 use ic_cdk_macros::query;
 
 #[derive(CandidType, Deserialize, Clone)]
@@ -40,7 +40,7 @@ pub struct StreamingCallbackToken {
 pub enum StreamingStrategy {
     Callback {
         token: StreamingCallbackToken,
-        callback: Func,
+        callback: CallbackFunc,
     },
 }
 
@@ -50,9 +50,11 @@ pub struct StreamingCallbackHttpResponse {
     pub token: Option<StreamingCallbackToken>,
 }
 
+define_function!(pub CallbackFunc: () -> () query);
+
 #[query]
 pub fn http_request(request: HttpRequest) -> HttpResponse {
-    let not_found = b"Asset Not Found".iter().map(|b| b.clone()).collect();
+    let not_found = b"Asset Not Found".to_vec();
     let asset_id = asset_id_extractor(&request.url);
     STATE.with(|state| {
         let state = state.borrow();
@@ -96,10 +98,7 @@ fn create_strategy(arg: CreateStrategyArgs) -> Option<StreamingStrategy> {
             let id = ic_cdk::id();
             Some(StreamingStrategy::Callback {
                 token,
-                callback: Func {
-                    principal: id,
-                    method: "http_request_streaming_callback".to_string(),
-                },
+                callback: CallbackFunc::new(id, "http_request_streaming_callback".to_string())
             })
         }
     }
@@ -112,7 +111,7 @@ fn create_token(arg: CreateStrategyArgs) -> Option<StreamingCallbackToken> {
     }
     Some(StreamingCallbackToken {
         asset_id: arg.asset_id,
-        chunk_index: arg.chunk_index.clone() + 1,
+        chunk_index: arg.chunk_index + 1,
         content_encoding: "gzip".to_string(),
         chunk_size: arg.chunk_size as u32,
     })

@@ -3,7 +3,8 @@ const { Ed25519KeyIdentity } = require("@dfinity/identity");
 const fs = require("fs");
 const path = require("path");
 const mime = require("mime");
-const { updateChecksum } = require("./utils.cjs");
+// const { updateChecksum } = require("./utils.cjs");
+const CRC32 = require("crc-32");
 
 // Actor Interface
 const {
@@ -19,6 +20,7 @@ let identityA = Ed25519KeyIdentity.generate();
 let identityB = Ed25519KeyIdentity.generate();
 
 const { getActor } = require("./actor.cjs");
+const { updateChecksum } = require("./utils.cjs");
 
 let storage_actors = {};
 
@@ -102,34 +104,31 @@ test("Setup Actors", async function (t) {
 // });
 
 test("Upload mp3 file", async function (t) {
-    const uploadChunk = async ({ content, order, checksum }) => {
-      return storage_actors.identityA.upload_chunk({ content, order, checksum });
+    const uploadChunk = async ({ content, order }) => {
+      return storage_actors.identityA.upload_chunk({ content, order });
     };
     let file_path = "tests/files/Rick Astley - Never Gonna Give You Up.mp3";
     const asset_buffer = fs.readFileSync(file_path);
     const asset_unit8Array = new Uint8Array(asset_buffer);
     const promises = [];
-    const chunkSize = 2000000;
+    const chunkSize = 1800000;
   
+    checksum = updateChecksum(asset_unit8Array);
     for (
       let start = 0, index = 0;
       start < asset_unit8Array.length;
       start += chunkSize, index++
     ) {
       const chunk = asset_unit8Array.slice(start, start + chunkSize);
-  
-      checksum = updateChecksum(chunk, checksum);
-  
-      console.log("checksum: ", checksum);
-  
+      
       promises.push(
         uploadChunk({
           content: chunk,
           order: index,
-          checksum
         })
-      );
-    }
+        );
+      }
+      console.log("checksum: ", checksum);
     chunk_ids = await Promise.all(promises);
     console.log(chunk_ids);
     let response = await storage_actors.identityA.chunk_ids_check(
@@ -160,10 +159,10 @@ test("Upload mp3 file", async function (t) {
   
     checksum = 0;
   
-    const asset = await storage_actors.identityA.get_asset(id);
-    t.equal(asset.file_name, asset_filename);
-    t.equal(asset.file_type, asset_content_type);
+    const asset = await storage_actors.identityA.query_asset(id);
     console.log(asset);
+    t.equal(asset[0].file_name, asset_filename);
+    t.equal(asset[0].file_type, asset_content_type);
   });
 
 // test("Upload picture", async function (t) {

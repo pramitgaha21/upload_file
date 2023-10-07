@@ -1,12 +1,12 @@
 use ic_cdk::api::management_canister::provisional::CanisterIdRecord;
 
-use crate::state::{query_in_prod, STATE};
+use crate::state::STATE;
 
-pub fn url_generator(asset_id: &u128) -> String {
+pub fn url_generator(in_prod: &bool, asset_id: &u128) -> String {
     let canister_id = ic_cdk::id();
-    match query_in_prod() {
-        false => format!("https://{canister_id}.raw.ic0.app/asset/{asset_id}"),
-        true => format!("http://{canister_id}.localhost:8080/asset/{asset_id}"),
+    match in_prod {
+        true => format!("https://{canister_id}.raw.ic0.app/asset/{asset_id}"),
+        false => format!("http://{canister_id}.localhost:8080/asset/{asset_id}"),
     }
 }
 
