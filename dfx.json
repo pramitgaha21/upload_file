@@ -2,14 +2,14 @@
   "version": 1,
   "canisters": {
     "scaler": {
-      "type": "custom",
-      "wasm": "wasm_files/scaler.wasm",
-      "candid": "src/scaler/scaler.did"
+      "type": "rust",
+      "package": "scaler",
+      "candid": "src/scaler/scaler.did",
+      "cycles": "optimize"
     },
     "storage": {
       "package": "storage",
       "type": "rust",
-      "wasm": "target/wasm32-unknown-unknown/release/storage.wasm",
       "candid": "src/storage/storage.did",
       "cycles": "optimize"
     }
