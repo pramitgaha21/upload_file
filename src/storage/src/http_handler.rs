@@ -1,5 +1,5 @@
 use crate::{state::STATE, utils::asset_id_extractor};
-use candid::{Func, CandidType, Deserialize, define_function};
+use candid::{CandidType, Deserialize, define_function};
 use ic_cdk_macros::query;
 
 #[derive(CandidType, Deserialize, Clone)]
